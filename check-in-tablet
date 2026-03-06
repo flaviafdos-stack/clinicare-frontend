@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in Tablet - CliniCare</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .checkin-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 50px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 64px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 20px 60px 20px 20px;
+            font-size: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #cbd5e0;
+            font-size: 24px;
+        }
+
+        .patient-list {
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 30px;
+        }
+
+        .patient-list.show {
+            display: block;
+        }
+
+        .patient-item {
+            background: #f7fafc;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            border: 2px solid transparent;
+        }
+
+        .patient-item:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .patient-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .patient-info {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .welcome-screen {
+            display: none;
+        }
+
+        .welcome-screen.show {
+            display: block;
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            color: #48bb78;
+            margin-bottom: 30px;
+        }
+
+        .welcome-message {
+            font-size: 32px;
+            color: #2d3748;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .welcome-subtitle {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .checkin-container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkin-container">
+        <!-- Tela Inicial -->
+        <div id="initialScreen">
+            <div class="logo">
+                <i class="fas fa-tooth"></i>
+            </div>
+            <h1>Bem-vindo(a) ao CliniCare</h1>
+            <p class="subtitle">Faça seu check-in para agilizar seu atendimento</p>
+
+            <div class="search-box">
+                <input type="text" id="searchPatient" placeholder="Digite seu nome, CPF ou telefone..." autocomplete="off">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="patient-list" id="patientList">
+                <!-- Será preenchido dinamicamente -->
+            </div>
+
+            <button class="btn btn-primary" onclick="newPatient()" style="display: none;" id="btnNewPatient">
+                <i class="fas fa-user-plus"></i> Não encontrei meu nome
+            </button>
+
+            <button class="btn btn-secondary" onclick="callReceptionist()">
+                <i class="fas fa-bell"></i> Chamar Recepção
+            </button>
+        </div>
+
+        <!-- Tela de Loading -->
+        <div class="loading" id="loadingScreen">
+            <div class="spinner"></div>
+            <h2>Processando check-in...</h2>
+            <p style="color: #718096; margin-top: 10px;">Aguarde um momento</p>
+        </div>
+
+        <!-- Tela de Sucesso -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="welcome-message">Check-in realizado!</h2>
+            <p class="welcome-subtitle" id="welcomePatientName">Seja bem-vindo(a), Paciente</p>
+            <p style="color: #718096; font-size: 16px; margin-bottom: 40px;">
+                Por favor, aguarde na recepção. Você será chamado(a) em breve.
+            </p>
+            <button class="btn btn-primary" onclick="resetCheckin()">
+                <i class="fas fa-redo"></i> Fazer Novo Check-in
+            </button>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script>
+        let patientsData = [];
+
+        // Buscar pacientes
+        const searchInput = document.getElementById('searchPatient');
+        const patientList = document.getElementById('patientList');
+        const btnNewPatient = document.getElementById('btnNewPatient');
+
+        searchInput.addEventListener('input', async (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+
+            if (searchTerm.length < 2) {
+                patientList.classList.remove('show');
+                btnNewPatient.style.display = 'none';
+                return;
+            }
+
+            try {
+                // Buscar pacientes no Supabase
+                patientsData = await supabase.getPacientes(100);
+                
+                const filtered = patientsData.filter(p => 
+                    (p.nome && p.nome.toLowerCase().includes(searchTerm)) ||
+                    (p.cpf && p.cpf.includes(searchTerm)) ||
+                    (p.telefone && p.telefone.includes(searchTerm))
+                );
+
+                if (filtered.length > 0) {
+                    displayPatients(filtered);
+                    btnNewPatient.style.display = 'none';
+                } else {
+                    patientList.innerHTML = '<p style="padding: 20px; color: #718096;">Nenhum paciente encontrado</p>';
+                    patientList.classList.add('show');
+                    btnNewPatient.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Erro ao buscar pacientes:', error);
+                patientList.innerHTML = '<p style="padding: 20px; color: #f56565;">Erro ao buscar pacientes</p>';
+                patientList.classList.add('show');
+            }
+        });
+
+        function displayPatients(patients) {
+            patientList.innerHTML = patients.map(p => `
+                <div class="patient-item" onclick="selectPatient('${p.id}', '${p.nome}')">
+                    <div class="patient-name">${p.nome}</div>
+                    <div class="patient-info">
+                        ${p.cpf ? 'CPF: ' + p.cpf : ''} 
+                        ${p.telefone ? '• Tel: ' + p.telefone : ''}
+                    </div>
+                </div>
+            `).join('');
+            patientList.classList.add('show');
+        }
+
+        async function selectPatient(patientId, patientName) {
+            // Mostrar loading
+            document.getElementById('initialScreen').style.display = 'none';
+            document.getElementById('loadingScreen').classList.add('show');
+
+            try {
+                // Criar check-in no Supabase
+                await supabase.createCheckin({
+                    patient_id: patientId,
+                    check_in_time: new Date().toISOString(),
+                    status: 'aguardando'
+                });
+
+                // Aguardar 2 segundos (simular processamento)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Mostrar tela de sucesso
+                document.getElementById('loadingScreen').classList.remove('show');
+                document.getElementById('welcomeScreen').classList.add('show');
+                document.getElementById('welcomePatientName').textContent = `Seja bem-vindo(a), ${patientName}`;
+
+            } catch (error) {
+                console.error('Erro ao fazer check-in:', error);
+                alert('Erro ao realizar check-in. Por favor, procure a recepção.');
+                resetCheckin();
+            }
+        }
+
+        function newPatient() {
+            alert('Por favor, dirija-se à recepção para realizar seu cadastro.');
+        }
+
+        function callReceptionist() {
+            alert('A recepção foi chamada! Aguarde um momento que alguém irá atendê-lo.');
+        }
+
+        function resetCheckin() {
+            document.getElementById('welcomeScreen').classList.remove('show');
+            document.getElementById('initialScreen').style.display = 'block';
+            searchInput.value = '';
+            patientList.classList.remove('show');
+            patientList.innerHTML = '';
+            btnNewPatient.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
