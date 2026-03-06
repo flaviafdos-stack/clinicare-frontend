@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar Código - CliniCare</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .otp-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .otp-header {
+            margin-bottom: 30px;
+        }
+
+        .otp-icon {
+            font-size: 64px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .otp-header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .otp-header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .otp-input {
+            width: 60px;
+            height: 60px;
+            font-size: 32px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .otp-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .otp-input.filled {
+            background: #f7fafc;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .resend-info {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .resend-info p {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .timer {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .success-message {
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: #48bb78;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: #f56565;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .otp-container {
+                padding: 30px 20px;
+            }
+
+            .otp-input {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="otp-container">
+        <div id="otpView">
+            <div class="otp-header">
+                <div class="otp-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1>Validação de Código</h1>
+                <p>Digite o código de 6 dígitos enviado para seu dispositivo</p>
+            </div>
+
+            <div class="otp-inputs">
+                <input type="text" class="otp-input" maxlength="1" id="otp1" autofocus>
+                <input type="text" class="otp-input" maxlength="1" id="otp2">
+                <input type="text" class="otp-input" maxlength="1" id="otp3">
+                <input type="text" class="otp-input" maxlength="1" id="otp4">
+                <input type="text" class="otp-input" maxlength="1" id="otp5">
+                <input type="text" class="otp-input" maxlength="1" id="otp6">
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> Código inválido. Tente novamente.
+            </div>
+
+            <button class="btn btn-primary" onclick="validateOTP()" id="btnValidate">
+                <i class="fas fa-check"></i> Validar Código
+            </button>
+
+            <div class="resend-info">
+                <p>Não recebeu o código?</p>
+                <div class="timer" id="timer">Reenviar em <span id="countdown">60</span>s</div>
+                <button class="btn btn-secondary" onclick="resendOTP()" id="btnResend" disabled>
+                    <i class="fas fa-redo"></i> Reenviar Código
+                </button>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Código Validado!</h2>
+            <p>Sua identidade foi confirmada com sucesso.</p>
+            <button class="btn btn-primary" onclick="continueProcess()">
+                <i class="fas fa-arrow-right"></i> Continuar
+            </button>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script>
+        // Gerenciar inputs OTP
+        const otpInputs = document.querySelectorAll('.otp-input');
+        
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                
+                if (value.length === 1) {
+                    input.classList.add('filled');
+                    // Mover para o próximo input
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                } else {
+                    input.classList.remove('filled');
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                // Backspace - voltar para input anterior
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+
+            // Permitir apenas números
+            input.addEventListener('keypress', (e) => {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Timer de reenvio
+        let countdown = 60;
+        const countdownElement = document.getElementById('countdown');
+        const btnResend = document.getElementById('btnResend');
+        const timerElement = document.getElementById('timer');
+
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                timerElement.style.display = 'none';
+                btnResend.disabled = false;
+            }
+        }, 1000);
+
+        async function validateOTP() {
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            
+            if (otp.length !== 6) {
+                document.getElementById('errorMessage').classList.add('show');
+                return;
+            }
+
+            const btnValidate = document.getElementById('btnValidate');
+            btnValidate.disabled = true;
+            btnValidate.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando...';
+
+            try {
+                // Simular validação (substituir por chamada real à API)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Sucesso
+                document.getElementById('otpView').style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+
+            } catch (error) {
+                console.error('Erro ao validar OTP:', error);
+                document.getElementById('errorMessage').classList.add('show');
+                btnValidate.disabled = false;
+                btnValidate.innerHTML = '<i class="fas fa-check"></i> Validar Código';
+            }
+        }
+
+        async function resendOTP() {
+            const btnResend = document.getElementById('btnResend');
+            btnResend.disabled = true;
+            btnResend.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reenviando...';
+
+            try {
+                // Simular reenvio (substituir por chamada real à API)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                alert('Código reenviado com sucesso!');
+                
+                // Resetar timer
+                countdown = 60;
+                countdownElement.textContent = countdown;
+                document.getElementById('timer').style.display = 'block';
+                
+                const newTimer = setInterval(() => {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(newTimer);
+                        document.getElementById('timer').style.display = 'none';
+                        btnResend.disabled = false;
+                    }
+                }, 1000);
+
+                btnResend.innerHTML = '<i class="fas fa-redo"></i> Reenviar Código';
+
+            } catch (error) {
+                console.error('Erro ao reenviar OTP:', error);
+                alert('Erro ao reenviar código. Tente novamente.');
+                btnResend.disabled = false;
+                btnResend.innerHTML = '<i class="fas fa-redo"></i> Reenviar Código';
+            }
+        }
+
+        function continueProcess() {
+            // Redirecionar ou fechar janela
+            const returnUrl = new URLSearchParams(window.location.search).get('return');
+            if (returnUrl) {
+                window.location.href = returnUrl;
+            } else {
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>
