@@ -63,9 +63,9 @@ function renderizarListaPacientes(pacientes) {
     
     tbody.innerHTML = pacientes.map(p => `
         <tr>
-            <td>${p.nome || '-'}</td>
+            <td>${p.name || p.nome || '-'}</td>
             <td>${p.cpf || '-'}</td>
-            <td>${p.telefone || '-'}</td>
+            <td>${p.phone || p.telefone || '-'}</td>
             <td>${p.email || '-'}</td>
             <td>${formatarData(p.created_at)}</td>
             <td>
@@ -108,22 +108,22 @@ async function salvarPaciente(event) {
     try {
         // Coletar dados do formulário
         const formData = {
-            nome: document.getElementById('pacNome')?.value,
+            name: document.getElementById('pacNome')?.value,
             cpf: document.getElementById('pacCPF')?.value,
-            telefone: document.getElementById('pacTelefone')?.value,
+            phone: document.getElementById('pacTelefone')?.value,
             email: document.getElementById('pacEmail')?.value,
-            data_nascimento: document.getElementById('pacDataNasc')?.value,
-            endereco: document.getElementById('pacEndereco')?.value,
-            cidade: document.getElementById('pacCidade')?.value,
+            birth_date: document.getElementById('pacDataNasc')?.value,
+            address: document.getElementById('pacEndereco')?.value,
+            city: document.getElementById('pacCidade')?.value,
         };
         
         // Validação básica
-        if (!formData.nome) {
+        if (!formData.name) {
             alert('❌ Nome é obrigatório');
             return;
         }
         
-        if (!formData.telefone) {
+        if (!formData.phone) {
             alert('❌ Telefone é obrigatório');
             return;
         }
@@ -171,13 +171,13 @@ async function editarPaciente(id) {
         pacienteAtual = paciente;
         
         // Preencher formulário
-        document.getElementById('pacNome').value = paciente.nome || '';
+        document.getElementById('pacNome').value = paciente.name || paciente.nome || '';
         document.getElementById('pacCPF').value = paciente.cpf || '';
-        document.getElementById('pacTelefone').value = paciente.telefone || '';
+        document.getElementById('pacTelefone').value = paciente.phone || paciente.telefone || '';
         document.getElementById('pacEmail').value = paciente.email || '';
-        document.getElementById('pacDataNasc').value = paciente.data_nascimento || '';
-        document.getElementById('pacEndereco').value = paciente.endereco || '';
-        document.getElementById('pacCidade').value = paciente.cidade || '';
+        document.getElementById('pacDataNasc').value = paciente.birth_date || paciente.data_nascimento || '';
+        document.getElementById('pacEndereco').value = paciente.address || paciente.endereco || '';
+        document.getElementById('pacCidade').value = paciente.city || paciente.cidade || '';
         
         // Armazenar ID para usar nos botões de documentos
         document.getElementById('pacNome').dataset.pacienteId = paciente.id;
@@ -242,8 +242,10 @@ function pesquisarPacientes() {
     }
     
     const resultados = pacientesData.filter(p => 
+        (p.name && p.name.toLowerCase().includes(termo)) ||
         (p.nome && p.nome.toLowerCase().includes(termo)) ||
         (p.cpf && p.cpf.includes(termo)) ||
+        (p.phone && p.phone.includes(termo)) ||
         (p.telefone && p.telefone.includes(termo)) ||
         (p.email && p.email.toLowerCase().includes(termo))
     );
