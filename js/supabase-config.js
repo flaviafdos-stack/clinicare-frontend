@@ -62,55 +62,55 @@ class SupabaseClient {
     }
 
     /**
-     * PACIENTES
+     * PACIENTES - USANDO NOME CORRETO DA TABELA
      */
     async getPacientes(limit = 100, offset = 0) {
-        return this.request(`/pacientes?limit=${limit}&offset=${offset}&order=created_at.desc`);
+        return this.request(`/patients?limit=${limit}&offset=${offset}&order=created_at.desc`);
     }
 
     async getPacienteById(id) {
-        const result = await this.request(`/pacientes?id=eq.${id}`);
+        const result = await this.request(`/patients?id=eq.${id}`);
         return result[0] || null;
     }
 
     async createPaciente(data) {
-        return this.request('/pacientes', {
+        return this.request('/patients', {
             method: 'POST',
             body: JSON.stringify(data)
         });
     }
 
     async updatePaciente(id, data) {
-        return this.request(`/pacientes?id=eq.${id}`, {
+        return this.request(`/patients?id=eq.${id}`, {
             method: 'PATCH',
             body: JSON.stringify(data)
         });
     }
 
     async deletePaciente(id) {
-        return this.request(`/pacientes?id=eq.${id}`, {
+        return this.request(`/patients?id=eq.${id}`, {
             method: 'DELETE'
         });
     }
 
     /**
-     * DOCUMENTOS
+     * DOCUMENTOS - USANDO NOME CORRETO DA TABELA
      */
     async getDocumentos(pacienteId = null, limit = 100) {
-        let endpoint = `/documentos?limit=${limit}&order=created_at.desc`;
+        let endpoint = `/medical_records?limit=${limit}&order=created_at.desc`;
         if (pacienteId) {
-            endpoint += `&paciente_id=eq.${pacienteId}`;
+            endpoint += `&patient_id=eq.${pacienteId}`;
         }
         return this.request(endpoint);
     }
 
     async getDocumentoById(id) {
-        const result = await this.request(`/documentos?id=eq.${id}`);
+        const result = await this.request(`/medical_records?id=eq.${id}`);
         return result[0] || null;
     }
 
     async createDocumento(data) {
-        return this.request('/documentos', {
+        return this.request('/medical_records', {
             method: 'POST',
             body: JSON.stringify({
                 ...data,
@@ -121,7 +121,7 @@ class SupabaseClient {
     }
 
     async updateDocumento(id, data) {
-        return this.request(`/documentos?id=eq.${id}`, {
+        return this.request(`/medical_records?id=eq.${id}`, {
             method: 'PATCH',
             body: JSON.stringify({
                 ...data,
@@ -170,7 +170,7 @@ class SupabaseClient {
      */
     async healthCheck() {
         try {
-            await this.request('/pacientes?limit=1');
+            await this.request('/patients?limit=1');
             return {
                 status: 'healthy',
                 database: 'connected',
