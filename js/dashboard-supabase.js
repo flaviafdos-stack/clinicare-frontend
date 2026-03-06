@@ -183,9 +183,4 @@ function verDetalhes(nome) {
 }
 
 function realizarFollowup(nome) {
-    alert(`Realizar follow-up com: ${nome}`);
-    // TODO: Implementar modal de follow-up
-}
-
-// Carregar dados ao inicializar
-loadDashboardData();
+    alert(`Realizar<span class="cursor">█</span>
