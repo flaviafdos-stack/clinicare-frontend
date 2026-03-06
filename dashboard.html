@@ -60,12 +60,16 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="page-header">
+            <header class="page-header">
                 <div>
                     <h1>Dashboard</h1>
-                    <p id="currentDate"></p>
+                    <p id="currentDate">Carregando...</p>
                 </div>
-            </div>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span data-user-name>Usuário</span>
+                </div>
+            </header>
 
             <!-- Stats Cards -->
             <div class="stats-grid">
@@ -73,9 +77,9 @@
                     <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="stat-details">
-                        <p class="stat-label">Total de Pacientes</p>
-                        <h3 class="stat-value" id="totalPacientes">0</h3>
+                    <div class="stat-info">
+                        <h3 id="totalPacientes">0</h3>
+                        <p>Total de Pacientes</p>
                     </div>
                 </div>
 
@@ -83,9 +87,9 @@
                     <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <i class="fas fa-calendar-check"></i>
                     </div>
-                    <div class="stat-details">
-                        <p class="stat-label">Consultas Hoje</p>
-                        <h3 class="stat-value" id="consultasHoje">0</h3>
+                    <div class="stat-info">
+                        <h3 id="consultasHoje">0</h3>
+                        <p>Consultas Hoje</p>
                     </div>
                 </div>
 
@@ -93,9 +97,9 @@
                     <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
-                    <div class="stat-details">
-                        <p class="stat-label">Receita Mensal</p>
-                        <h3 class="stat-value" id="receitaMensal">R$ 0</h3>
+                    <div class="stat-info">
+                        <h3 id="receitaMensal">R$ 0</h3>
+                        <p>Receita do Mês</p>
                     </div>
                 </div>
 
@@ -103,9 +107,9 @@
                     <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <div class="stat-details">
-                        <p class="stat-label">Alertas Estoque</p>
-                        <h3 class="stat-value" id="alertasEstoque">0</h3>
+                    <div class="stat-info">
+                        <h3 id="alertasEstoque">0</h3>
+                        <p>Alertas de Estoque</p>
                     </div>
                 </div>
             </div>
@@ -114,19 +118,23 @@
             <div class="charts-grid">
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-chart-bar"></i> Receita Últimos 6 Meses</h3>
+                        <h3><i class="fas fa-chart-bar"></i> Receita Mensal</h3>
                     </div>
                     <div class="card-body">
-                        <canvas id="receitaChart" style="height: 300px;"></canvas>
+                        <div style="height: 300px;">
+                            <canvas id="receitaChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-chart-pie"></i> Procedimentos Mais Realizados</h3>
+                        <h3><i class="fas fa-chart-pie"></i> Procedimentos</h3>
                     </div>
                     <div class="card-body">
-                        <canvas id="procedimentosChart" style="height: 300px;"></canvas>
+                        <div style="height: 300px;">
+                            <canvas id="procedimentosChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -155,11 +163,11 @@
                 </div>
             </div>
 
-            <!-- Follow-ups Pendentes -->
+            <!-- Follow-ups -->
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-bell"></i> Follow-ups Pendentes</h3>
-                    <a href="crm.html" class="btn btn-sm btn-secondary">Ver CRM</a>
+                    <h3><i class="fas fa-phone"></i> Follow-ups Pendentes</h3>
+                    <a href="crm.html" class="btn btn-sm btn-primary">Ver Todos</a>
                 </div>
                 <div class="card-body">
                     <div class="table-container">
@@ -203,7 +211,13 @@
                 console.log('✅ Supabase Health:', health);
                 
                 if (health.status === 'healthy') {
-                    console.log('✅ Sistema conectado ao Supabase com sucesso!');
+                    // Atualizar indicador visual (se existir)
+                    const statusBadge = document.querySelector('[data-backend-status]');
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Online';
+                        statusBadge.classList.remove('badge-danger');
+                        statusBadge.classList.add('badge-success');
+                    }
                 }
             } catch (error) {
                 console.error('❌ Erro ao testar Supabase:', error);
