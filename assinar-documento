@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assinar Documento - CliniCare</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signature-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .signature-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .signature-header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .signature-header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .document-info {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .document-info h3 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .signature-pad-container {
+            margin: 30px 0;
+        }
+
+        .signature-pad-container label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        #signaturePad {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            height: 200px;
+            background: white;
+        }
+
+        .signature-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-clear {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-clear:hover {
+            background: #edf2f7;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: #48bb78;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .success-message p {
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .signature-container {
+                padding: 20px;
+            }
+
+            .signature-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signature-container">
+        <div class="signature-header">
+            <h1><i class="fas fa-file-signature"></i> Assinatura Digital</h1>
+            <p>Assine digitalmente o documento abaixo</p>
+        </div>
+
+        <div id="documentView">
+            <div class="document-info">
+                <h3><i class="fas fa-file-alt"></i> Informações do Documento</h3>
+                <div class="info-item">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value" id="docType">Carregando...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Paciente:</span>
+                    <span class="info-value" id="docPatient">Carregando...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data:</span>
+                    <span class="info-value" id="docDate">Carregando...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value" id="docCode">Carregando...</span>
+                </div>
+            </div>
+
+            <div class="signature-pad-container">
+                <label for="signaturePad">
+                    <i class="fas fa-pencil-alt"></i> Assine no quadro abaixo:
+                </label>
+                <canvas id="signaturePad"></canvas>
+                
+                <div class="signature-actions">
+                    <button class="btn btn-clear" onclick="clearSignature()">
+                        <i class="fas fa-eraser"></i> Limpar
+                    </button>
+                    <button class="btn btn-primary" onclick="saveSignature()" id="btnSave">
+                        <i class="fas fa-check"></i> Confirmar Assinatura
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Documento Assinado com Sucesso!</h2>
+            <p>Sua assinatura foi registrada e o documento está pronto.</p>
+            <button class="btn btn-primary" onclick="window.close()">
+                <i class="fas fa-times"></i> Fechar
+            </button>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script>
+        // Configuração do canvas
+        const canvas = document.getElementById('signaturePad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let hasSignature = false;
+
+        // Ajustar tamanho do canvas
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Configurar contexto
+        ctx.strokeStyle = '#2d3748';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Eventos do mouse
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Eventos touch
+        canvas.addEventListener('touchstart', handleTouchStart);
+        canvas.addEventListener('touchmove', handleTouchMove);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            hasSignature = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasSignature = false;
+        }
+
+        async function saveSignature() {
+            if (!hasSignature) {
+                alert('Por favor, assine o documento antes de confirmar.');
+                return;
+            }
+
+            const btnSave = document.getElementById('btnSave');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+            try {
+                // Converter canvas para base64
+                const signatureData = canvas.toDataURL('image/png');
+
+                // Salvar no localStorage (ou enviar para o servidor)
+                const documentData = {
+                    signature: signatureData,
+                    timestamp: new Date().toISOString(),
+                    documentId: new URLSearchParams(window.location.search).get('id')
+                };
+
+                localStorage.setItem('document_signature', JSON.stringify(documentData));
+
+                // Mostrar mensagem de sucesso
+                document.getElementById('documentView').style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+
+            } catch (error) {
+                console.error('Erro ao salvar assinatura:', error);
+                alert('Erro ao salvar assinatura. Tente novamente.');
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="fas fa-check"></i> Confirmar Assinatura';
+            }
+        }
+
+        // Carregar informações do documento
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            
+            document.getElementById('docType').textContent = params.get('type') || 'Documento Médico';
+            document.getElementById('docPatient').textContent = params.get('patient') || 'Paciente';
+            document.getElementById('docDate').textContent = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('docCode').textContent = params.get('id') || 'N/A';
+        });
+    </script>
+</body>
+</html>
