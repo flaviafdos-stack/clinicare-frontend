@@ -1,1 +1,242 @@
+/* CRM Styles - Design Sofisticado */
 
+.kanban-board {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    overflow-x: auto;
+    min-height: 500px;
+}
+
+.kanban-column {
+    flex: 0 0 320px;
+    background: var(--gray-100);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--gray-200);
+}
+
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gray-300);
+}
+
+.kanban-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.kanban-count {
+    background: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+.kanban-cards {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+}
+
+.kanban-card {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    cursor: move;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+    border-left: 4px solid var(--primary);
+}
+
+.kanban-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-left-color: var(--primary-dark);
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+}
+
+.kanban-column.drag-over {
+    background: rgba(201, 169, 98, 0.1);
+    border: 2px dashed var(--primary);
+}
+
+.kanban-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.kanban-card-name {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 16px;
+}
+
+.kanban-card-interest {
+    color: var(--gray-600);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.kanban-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.kanban-card-value {
+    font-weight: 600;
+    color: var(--secondary);
+    font-size: 15px;
+}
+
+.kanban-card-time {
+    font-size: 11px;
+    color: var(--gray-600);
+}
+
+/* Timeline de Interações */
+.timeline {
+    position: relative;
+    padding: 24px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 45px;
+    margin-bottom: 24px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 28px;
+    bottom: -24px;
+    width: 2px;
+    background: var(--gray-300);
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px var(--primary);
+}
+
+.timeline-content {
+    background: var(--gray-100);
+    padding: 18px;
+    border-radius: 12px;
+    border-left: 3px solid var(--primary);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.timeline-type {
+    font-weight: 600;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+.timeline-description {
+    color: var(--gray-600);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Lista de Histórico */
+.historico-item, .followup-item {
+    padding: 18px;
+    border-bottom: 1px solid var(--gray-200);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.historico-item:hover, .followup-item:hover {
+    background: var(--gray-100);
+    transform: translateX(4px);
+}
+
+.historico-item:last-child, .followup-item:last-child {
+    border-bottom: none;
+}
+
+.historico-header, .followup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.historico-name, .followup-name {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.historico-time, .followup-time {
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+.historico-action, .followup-reason {
+    font-size: 13px;
+    color: var(--gray-600);
+}
+
+.followup-priority {
+    display: inline-block;
+    margin-top: 6px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .kanban-board {
+        flex-direction: column;
+    }
+    
+    .kanban-column {
+        flex: 1 1 auto;
+    }
+}
