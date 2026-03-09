@@ -1,1 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CliniCare - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-tooth"></i> CliniCare</h1>
+                <p>Sistema de Gestão de Consultório</p>
+            </div>
+
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchTab('admin')">
+                    <i class="fas fa-user-shield"></i> Administração
+                </button>
+                <button class="login-tab" onclick="switchTab('paciente')">
+                    <i class="fas fa-user"></i> Paciente
+                </button>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">
+                        <i class="fas fa-lock"></i> Senha
+                    </label>
+                    <input type="password" id="senha" name="senha" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+            </form>
+
+            <div style="margin-top: 20px; padding: 18px; background: var(--nude); border-radius: 12px; font-size: 13px; color: var(--secondary); border-left: 4px solid var(--primary);">
+                <i class="fas fa-shield-alt" style="color: var(--primary);"></i> <strong>Acesso Seguro</strong><br>
+                <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--gray-600);">
+                    Sistema protegido por autenticação forte e conformidade LGPD. 
+                    Para solicitar acesso, entre em contato com o administrador.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema de autenticação simplificado e robusto -->
+    <script src="js/auth-simple.js"></script>
+</body>
+</html>
 
