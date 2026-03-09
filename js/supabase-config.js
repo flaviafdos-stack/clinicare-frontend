@@ -62,7 +62,7 @@ class SupabaseClient {
     }
 
     /**
-     * PACIENTES - USANDO NOME CORRETO DA TABELA
+     * PACIENTES
      */
     async getPacientes(limit = 100, offset = 0) {
         return this.request(`/patients?limit=${limit}&offset=${offset}&order=created_at.desc`);
@@ -94,7 +94,7 @@ class SupabaseClient {
     }
 
     /**
-     * DOCUMENTOS - USANDO NOME CORRETO DA TABELA
+     * DOCUMENTOS
      */
     async getDocumentos(pacienteId = null, limit = 100) {
         let endpoint = `/medical_records?limit=${limit}&order=created_at.desc`;
@@ -194,6 +194,12 @@ const supabase = new SupabaseClient();
 if (typeof window !== 'undefined') {
     window.supabase = supabase;
     window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+    
+    // Exportar variáveis individuais para compatibilidade
+    window.SUPABASE_URL = SUPABASE_CONFIG.url;
+    window.SUPABASE_ANON_KEY = SUPABASE_CONFIG.anonKey;
 }
 
 console.log('✅ Supabase Client inicializado');
+console.log('✅ SUPABASE_URL disponível:', window.SUPABASE_URL);
+console.log('✅ SUPABASE_ANON_KEY disponível:', window.SUPABASE_ANON_KEY ? 'SIM' : 'NÃO');
