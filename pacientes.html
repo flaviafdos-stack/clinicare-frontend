@@ -11,7 +11,10 @@
 <body>
     <div class="dashboard">
         <aside class="sidebar">
-            <div class="sidebar-header"><h2><i class="fas fa-tooth"></i> CliniCare</h2><p>Sistema de Gestão</p></div>
+            <div class="sidebar-header">
+                <h2><i class="fas fa-tooth"></i> CliniCare</h2>
+                <p>Sistema de Gestão</p>
+            </div>
             <nav class="sidebar-menu">
                 <a href="dashboard.html" class="menu-item"><i class="fas fa-home"></i> Dashboard</a>
                 <a href="pacientes.html" class="menu-item active"><i class="fas fa-users"></i> Pacientes</a>
@@ -24,18 +27,32 @@
                 <a href="whatsapp.html" class="menu-item"><i class="fab fa-whatsapp"></i> WhatsApp</a>
                 <a href="pops.html" class="menu-item"><i class="fas fa-clipboard-list"></i> POPs</a>
             </nav>
-            <div class="sidebar-footer"><button onclick="logout()" class="btn btn-danger" style="width: 100%;"><i class="fas fa-sign-out-alt"></i> Sair</button></div>
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="btn btn-danger" style="width: 100%;">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
         </aside>
 
         <main class="main-content">
             <div class="page-header">
-                <div><h1><i class="fas fa-users"></i> Pacientes</h1><p class="breadcrumb">Gestão de Pacientes</p></div>
-                <button id="btnNovoPaciente" class="btn btn-primary"><i class="fas fa-plus"></i> Novo Paciente</button>
+                <div>
+                    <h1><i class="fas fa-users"></i> Pacientes</h1>
+                    <p class="breadcrumb">Gestão de Pacientes</p>
+                </div>
+                <button id="btnNovoPaciente" class="btn btn-primary" onclick="abrirModalPaciente()">
+                    <i class="fas fa-plus"></i> Novo Paciente
+                </button>
             </div>
 
             <div class="card">
-                <div class="card-header"><h3><i class="fas fa-search"></i> Buscar Paciente</h3></div>
-                <input type="text" id="searchPaciente" placeholder="Buscar por nome, CPF ou telefone..." style="width: 100%; padding: 12px 15px; border: 2px solid var(--gray-200); border-radius: 10px;">
+                <div class="card-header">
+                    <h3><i class="fas fa-search"></i> Buscar Paciente</h3>
+                </div>
+                <input type="text" 
+                       id="searchPaciente" 
+                       placeholder="Buscar por nome, CPF ou telefone..." 
+                       style="width: 100%; padding: 12px 15px; border: 2px solid var(--gray-200); border-radius: 10px;">
             </div>
 
             <div class="card">
@@ -68,6 +85,7 @@
         </main>
     </div>
 
+    <!-- Modal de Cadastro/Edição -->
     <div id="modalPaciente" class="modal">
         <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
@@ -76,11 +94,21 @@
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--gray-200);">
-                <button class="btn btn-outline" onclick="showTab('dados')" id="btnTabDados" style="border-bottom: 3px solid var(--primary);">Dados Pessoais</button>
-                <button class="btn btn-outline" onclick="showTab('anamnese')" id="btnTabAnamnese">Anamnese</button>
-                <button class="btn btn-outline" onclick="showTab('termos')" id="btnTabTermos">Termos</button>
-                <button class="btn btn-outline" onclick="showTab('prontuario')" id="btnTabProntuario">Prontuário</button>
-                <button class="btn btn-outline" onclick="showTab('arquivos')" id="btnTabArquivos">Arquivos</button>
+                <button class="btn btn-outline" onclick="showTab('dados')" id="btnTabDados" style="border-bottom: 3px solid var(--primary);">
+                    <i class="fas fa-id-card"></i> Dados Pessoais
+                </button>
+                <button class="btn btn-outline" onclick="showTab('anamnese')" id="btnTabAnamnese">
+                    <i class="fas fa-notes-medical"></i> Anamnese
+                </button>
+                <button class="btn btn-outline" onclick="showTab('termos')" id="btnTabTermos">
+                    <i class="fas fa-file-contract"></i> Termos
+                </button>
+                <button class="btn btn-outline" onclick="showTab('prontuario')" id="btnTabProntuario">
+                    <i class="fas fa-file-medical"></i> Prontuário
+                </button>
+                <button class="btn btn-outline" onclick="showTab('arquivos')" id="btnTabArquivos">
+                    <i class="fas fa-folder"></i> Arquivos
+                </button>
             </div>
 
             <!-- Tab Dados Pessoais -->
@@ -187,6 +215,7 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="js/supabase-config.js"></script>
     <script src="js/auth-simple.js"></script>
     <script src="js/pacientes-supabase.js"></script>
@@ -199,8 +228,11 @@
             document.querySelectorAll('[id^="btnTab"]').forEach(btn => btn.style.borderBottom = 'none');
             
             // Ativar tab clicada
-            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.display = 'block';
-            document.getElementById('btnTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.borderBottom = '3px solid var(--primary)';
+            const tabElement = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+            const btnElement = document.getElementById('btnTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+            
+            if (tabElement) tabElement.style.display = 'block';
+            if (btnElement) btnElement.style.borderBottom = '3px solid var(--primary)';
         }
         
         // Gerar Pedido de Exames
@@ -213,6 +245,23 @@
             localStorage.clear();
             window.location.href = 'index.html';
         }
+    </script>
+    
+    <script>
+        // DEBUG - Verificar se função existe
+        console.log('🔍 DEBUG: typeof abrirModalPaciente =', typeof abrirModalPaciente);
+        console.log('🔍 DEBUG: Botão existe =', document.getElementById('btnNovoPaciente') ? 'SIM' : 'NÃO');
+        console.log('🔍 DEBUG: Modal existe =', document.getElementById('modalPaciente') ? 'SIM' : 'NÃO');
+        console.log('🔍 DEBUG: Form existe =', document.getElementById('formPaciente') ? 'SIM' : 'NÃO');
+        
+        // Teste direto ao clicar
+        setTimeout(() => {
+            const btn = document.getElementById('btnNovoPaciente');
+            if (btn) {
+                console.log('✅ Botão encontrado após carregamento');
+                console.log('✅ Onclick definido:', btn.onclick ? 'SIM' : 'NÃO');
+            }
+        }, 2000);
     </script>
 </body>
 </html>
