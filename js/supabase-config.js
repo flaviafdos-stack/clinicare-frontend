@@ -1,7 +1,7 @@
 /**
  * CLINICARE - Configuração Supabase Direto
  * Conexão direta com banco Supabase (sem backend intermediário)
- * Data: 06/03/2026 - VERSÃO DEBUG EDIÇÃO
+ * Data: 06/03/2026 - VERSÃO DEBUG COMPLETO
  */
 
 // Configuração do Supabase
@@ -65,26 +65,36 @@ class SupabaseClient {
      * PACIENTES
      */
     async getPacientes(limit = 100, offset = 0) {
+        console.log(`📋 Carregando lista de pacientes (limit: ${limit}, offset: ${offset})`);
         return this.request(`/patients?limit=${limit}&offset=${offset}&order=created_at.desc`);
     }
 
     async getPacienteById(id) {
         console.log('🔍 getPacienteById chamado com ID:', id);
+        console.log('🔍 Tipo do ID:', typeof id);
+        
         const url = `/patients?id=eq.${id}`;
-        console.log('🔍 URL completa:', `${this.baseUrl}${url}`);
+        console.log('🔍 URL da query:', `${this.baseUrl}${url}`);
         
         const result = await this.request(url);
         
-        console.log('📦 Resultado da query:', result);
+        console.log('📦 Resultado bruto da query:', result);
         console.log('📊 Tipo do resultado:', typeof result);
         console.log('📊 É array?', Array.isArray(result));
         console.log('📊 Tamanho do array:', result?.length);
         console.log('📊 Primeiro elemento:', result?.[0]);
         
-        return result[0] || null;
+        if (!result || result.length === 0) {
+            console.warn('⚠️ Nenhum paciente encontrado com ID:', id);
+            return null;
+        }
+        
+        console.log('✅ Paciente encontrado e retornado:', result[0]);
+        return result[0];
     }
 
     async createPaciente(data) {
+        console.log('➕ Criando novo paciente:', data);
         return this.request('/patients', {
             method: 'POST',
             body: JSON.stringify(data)
@@ -92,6 +102,8 @@ class SupabaseClient {
     }
 
     async updatePaciente(id, data) {
+        console.log('✏️ Atualizando paciente ID:', id);
+        console.log('📝 Dados para atualização:', data);
         return this.request(`/patients?id=eq.${id}`, {
             method: 'PATCH',
             body: JSON.stringify(data)
@@ -99,6 +111,7 @@ class SupabaseClient {
     }
 
     async deletePaciente(id) {
+        console.log('🗑️ Deletando paciente ID:', id);
         return this.request(`/patients?id=eq.${id}`, {
             method: 'DELETE'
         });
