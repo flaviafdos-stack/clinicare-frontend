@@ -1,107 +1,60 @@
-// ===================================================================
-// CLINICARE - GESTÃO DE PACIENTES
-// Versão: 5.3.0 (09/03/2026) - CORRIGIDO
-// Autor: Sistema CliniCare
-// Descrição: Gestão completa de pacientes com Supabase + LGPD
-// ===================================================================
+/**
+ * CLINICARE - Gestão de Pacientes com Supabase
+ * CRUD completo de pacientes usando Supabase direto
+ * Data: 06/03/2026
+ */
 
-console.log('✅ Módulo pacientes-supabase.js carregado');
+// Verificar autenticação
+checkAuth();
 
-// Verificar autenticação (com fallback)
-if (typeof checkAuth === 'function') {
-    checkAuth();
-} else if (!localStorage.getItem('clinicare_user')) {
-    console.warn('⚠️ Usuário não autenticado, redirecionando...');
-    window.location.href = 'index.html';
-}
+console.log('📋 Módulo de Pacientes carregado');
 
-// Inicializar ao carregar a página
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📋 Inicializando módulo de pacientes...');
-    carregarPacientes();
-    
-    // Eventos
-    const btnNovo = document.getElementById('btnNovoPaciente');
-    if (btnNovo) {
-        btnNovo.addEventListener('click', abrirModalPaciente);
-        console.log('✅ Botão "Novo Paciente" conectado');
-    } else {
-        console.error('❌ Botão btnNovoPaciente não encontrado');
-    }
-    
-    const formPaciente = document.getElementById('formPaciente');
-    if (formPaciente) {
-        formPaciente.addEventListener('submit', salvarPaciente);
-        console.log('✅ Formulário de paciente conectado');
-    }
-    
-    const searchInput = document.getElementById('searchPaciente');
-    if (searchInput) {
-        searchInput.addEventListener('input', pesquisarPacientes);
-        console.log('✅ Campo de busca conectado');
-    }
-});
+// Variáveis globais
+let pacientesData = [];
+let pacienteAtual = null;
 
-// ===================================================================
-// CARREGAR PACIENTES DO SUPABASE
-// ===================================================================
+/**
+ * Carregar lista de pacientes
+ */
 async function carregarPacientes() {
     try {
-        console.log('🔄 Carregando pacientes do Supabase...');
+        console.log('📥 Carregando pacientes do Supabase...');
         
-        // Verificar se SUPABASE_URL e SUPABASE_ANON_KEY estão disponíveis
-        if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-            console.error('❌ Variáveis Supabase não encontradas');
-            throw new Error('Configuração Supabase não disponível');
-        }
+        pacientesData = await supabase.getPacientes();
         
-        const response = await fetch(`${window.SUPABASE_URL}/rest/v1/patients?select=*&order=created_at.desc`, {
-            headers: {
-                'apikey': window.SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erro ao carregar pacientes: ${response.status}`);
-        }
-
-        const pacientes = await response.json();
-        console.log(`✅ ${pacientes.length} pacientes carregados`);
+        console.log(`✅ ${pacientesData.length} pacientes carregados`);
         
-        renderizarTabelaPacientes(pacientes);
-        atualizarContador(pacientes.length);
+        renderizarListaPacientes(pacientesData);
         
     } catch (error) {
         console.error('❌ Erro ao carregar pacientes:', error);
+        alert(`Erro ao carregar pacientes:\n${error.message}`);
         
-        // Fallback para localStorage
-        const pacientesLocal = JSON.parse(localStorage.getItem('clinicare_pacientes') || '[]');
-        renderizarTabelaPacientes(pacientesLocal);
-        atualizarContador(pacientesLocal.length);
+        // Tentar carregar do localStorage como fallback
+        carregarPacientesLocal();
     }
 }
 
-// ===================================================================
-// RENDERIZAR TABELA DE PACIENTES
-// ===================================================================
-function renderizarTabelaPacientes(pacientes) {
+/**
+ * Renderizar lista de pacientes na tabela
+ */
+function renderizarListaPacientes(pacientes) {
     const tbody = document.querySelector('#tabelaPacientes tbody');
     
     if (!tbody) {
-        console.error('❌ Elemento tbody não encontrado');
+        console.warn('⚠️ Tabela de pacientes não encontrada');
         return;
     }
     
     if (pacientes.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 60px 20px;">
-                    <div class="empty-state">
-                        <i class="fas fa-users" style="font-size: 64px; color: var(--gray-300); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--dark); margin-bottom: 10px;">Nenhum paciente cadastrado</h3>
-                        <p style="color: var(--gray-600); font-size: 14px;">Clique em "Novo Paciente" para adicionar o primeiro</p>
-                    </div>
+                <td colspan="6" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-user-plus" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                    <p style="color: #666; margin: 0;">Nenhum paciente cadastrado</p>
+                    <button onclick="abrirModalPaciente()" class="btn btn-primary" style="margin-top: 15px;">
+                        <i class="fas fa-plus"></i> Cadastrar Primeiro Paciente
+                    </button>
                 </td>
             </tr>
         `;
@@ -110,293 +63,295 @@ function renderizarTabelaPacientes(pacientes) {
     
     tbody.innerHTML = pacientes.map(p => `
         <tr>
-            <td><strong>${p.nome || p.name || '-'}</strong></td>
+            <td>${p.nome || '-'}</td>
             <td>${p.cpf || '-'}</td>
-            <td>${p.telefone || p.phone || '-'}</td>
+            <td>${p.telefone || '-'}</td>
             <td>${p.email || '-'}</td>
             <td>${formatarData(p.created_at)}</td>
             <td>
-                <button class="btn btn-sm btn-outline" onclick="editarPaciente('${p.id}')">
-                    <i class="fas fa-edit"></i> Editar
+                <button onclick="editarPaciente('${p.id}')" class="btn btn-sm btn-primary" title="Editar">
+                    <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="excluirPaciente('${p.id}')">
-                    <i class="fas fa-trash"></i> Excluir
+                <button onclick="excluirPaciente('${p.id}')" class="btn btn-sm btn-danger" title="Excluir">
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         </tr>
     `).join('');
 }
 
-// ===================================================================
-// ATUALIZAR CONTADOR
-// ===================================================================
-function atualizarContador(total) {
-    const contador = document.getElementById('totalPacientes');
-    if (contador) {
-        contador.textContent = `${total} paciente${total !== 1 ? 's' : ''}`;
-    }
-}
-
-// ===================================================================
-// ABRIR MODAL DE CADASTRO/EDIÇÃO
-// ===================================================================
-function abrirModalPaciente(pacienteId = null) {
-    console.log('🔓 Abrindo modal de paciente...');
+/**
+ * Abrir modal de novo paciente
+ */
+function abrirModalPaciente() {
+    pacienteAtual = null;
     
-    const modal = document.getElementById('modalPaciente');
+    // Limpar formulário
     const form = document.getElementById('formPaciente');
-    const titulo = document.getElementById('modalTitulo');
-    
-    if (!modal) {
-        console.error('❌ Modal não encontrado');
-        alert('❌ Erro: Modal não encontrado no HTML');
-        return;
+    if (form) {
+        form.reset();
     }
     
-    if (!form) {
-        console.error('❌ Formulário não encontrado');
-        return;
+    // Resetar título do modal
+    const modalTitulo = document.getElementById('modalTitulo');
+    if (modalTitulo) {
+        modalTitulo.innerHTML = '<i class="fas fa-user"></i> Novo Paciente';
     }
     
-    // Resetar formulário
-    form.reset();
-    
-    // Desmarcar checkbox LGPD
-    const checkboxLGPD = document.getElementById('consentimentoLGPD');
-    if (checkboxLGPD) {
-        checkboxLGPD.checked = false;
+    // Abrir modal usando classe active
+    const modal = document.getElementById('modalPaciente');
+    if (modal) {
+        modal.classList.add('active');
     }
     
-    if (pacienteId) {
-        titulo.textContent = 'Editar Paciente';
-        carregarDadosPaciente(pacienteId);
-    } else {
-        titulo.textContent = '✨ Novo Paciente';
-    }
-    
-    modal.classList.add('active');
-    console.log('✅ Modal aberto com sucesso');
+    console.log('✅ Modal aberto para novo paciente');
 }
 
-// ===================================================================
-// SALVAR PACIENTE (CREATE/UPDATE)
-// ===================================================================
+/**
+ * Salvar paciente (criar ou atualizar)
+ */
 async function salvarPaciente(event) {
-    event.preventDefault();
-    
-    console.log('💾 Salvando paciente...');
-    
-    const form = event.target;
-    const btnSalvar = form.querySelector('button[type="submit"]');
-    const btnTextoOriginal = btnSalvar.innerHTML;
-    
-    // Validar campos obrigatórios
-    const nome = document.getElementById('pacNome')?.value.trim();
-    const telefone = document.getElementById('pacTelefone')?.value.trim();
-    const consentimentoLGPD = document.getElementById('consentimentoLGPD')?.checked;
-    
-    if (!nome || !telefone) {
-        alert('❌ Preencha os campos obrigatórios: Nome e Telefone');
-        return;
-    }
-    
-    if (!consentimentoLGPD) {
-        alert('❌ Você precisa aceitar a Política de Privacidade (LGPD) para continuar');
-        return;
-    }
-    
-    // Mostrar loading
-    btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-    btnSalvar.disabled = true;
+    if (event) event.preventDefault();
     
     try {
-        const pacienteData = {
-            nome: nome,
-            cpf: document.getElementById('pacCpf')?.value.trim() || null,
-            data_nascimento: document.getElementById('pacNascimento')?.value || null,
-            telefone: telefone,
-            email: document.getElementById('pacEmail')?.value.trim() || null,
-            cep: document.getElementById('pacCep')?.value.trim() || null,
-            endereco: document.getElementById('pacEndereco')?.value.trim() || null,
-            cidade: document.getElementById('pacCidade')?.value.trim() || null,
-            consentimento_lgpd: true,
-            data_consentimento: new Date().toISOString(),
-            finalidade_dados: 'Cadastro e acompanhamento clínico'
+        // Coletar dados do formulário
+        const formData = {
+            nome: document.getElementById('pacNome')?.value,
+            cpf: document.getElementById('pacCpf')?.value,
+            telefone: document.getElementById('pacTelefone')?.value,
+            email: document.getElementById('pacEmail')?.value,
+            data_nascimento: document.getElementById('pacNascimento')?.value,
+            endereco: document.getElementById('pacEndereco')?.value,
+            cidade: document.getElementById('pacCidade')?.value,
+            cep: document.getElementById('pacCep')?.value,
+            consentimento_lgpd: document.getElementById('consentimentoLGPD')?.checked || false,
+            data_consentimento: document.getElementById('consentimentoLGPD')?.checked ? new Date().toISOString() : null,
+            finalidade_dados: 'Atendimento odontológico, gestão de prontuário clínico, comunicações relacionadas ao tratamento'
         };
         
-        console.log('📤 Enviando para Supabase:', pacienteData);
-        
-        const response = await fetch(`${window.SUPABASE_URL}/rest/v1/patients`, {
-            method: 'POST',
-            headers: {
-                'apikey': window.SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(pacienteData)
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Erro ${response.status}`);
+        // Validação básica
+        if (!formData.nome) {
+            alert('❌ Nome é obrigatório');
+            return;
         }
         
-        const novoPaciente = await response.json();
-        console.log('✅ Paciente salvo com sucesso:', novoPaciente);
+        if (!formData.telefone) {
+            alert('❌ Telefone é obrigatório');
+            return;
+        }
         
-        // Salvar também no localStorage (backup)
-        const pacientesLocal = JSON.parse(localStorage.getItem('clinicare_pacientes') || '[]');
-        pacientesLocal.push(novoPaciente[0] || novoPaciente);
-        localStorage.setItem('clinicare_pacientes', JSON.stringify(pacientesLocal));
+        console.log('💾 Salvando paciente...', formData);
         
-        // Fechar modal e recarregar lista
+        if (pacienteAtual) {
+            // Atualizar
+            await supabase.updatePaciente(pacienteAtual.id, formData);
+            console.log('✅ Paciente atualizado');
+            alert('✅ Paciente atualizado com sucesso!');
+        } else {
+            // Criar
+            const novoPaciente = await supabase.createPaciente(formData);
+            console.log('✅ Paciente criado:', novoPaciente);
+            alert('✅ Paciente cadastrado com sucesso!');
+        }
+        
+        // Recarregar lista
+        await carregarPacientes();
+        
+        // Fechar modal
         fecharModal();
-        carregarPacientes();
-        
-        alert('✅ Paciente cadastrado com sucesso!');
         
     } catch (error) {
         console.error('❌ Erro ao salvar paciente:', error);
-        alert(`❌ Erro ao salvar paciente: ${error.message}\n\nTente novamente ou contate o suporte.`);
-    } finally {
-        btnSalvar.innerHTML = btnTextoOriginal;
-        btnSalvar.disabled = false;
+        alert(`Erro ao salvar paciente:\n${error.message}`);
     }
 }
 
-// ===================================================================
-// EDITAR PACIENTE
-// ===================================================================
-async function editarPaciente(pacienteId) {
+/**
+ * Editar paciente
+ */
+async function editarPaciente(id) {
     try {
-        console.log('✏️ Carregando paciente para edição:', pacienteId);
+        console.log('📝 Carregando paciente para edição:', id);
         
-        const response = await fetch(`${window.SUPABASE_URL}/rest/v1/patients?id=eq.${pacienteId}&select=*`, {
-            headers: {
-                'apikey': window.SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Erro ao carregar paciente');
-        }
-        
-        const pacientes = await response.json();
-        const paciente = pacientes[0];
+        const paciente = await supabase.getPacienteById(id);
         
         if (!paciente) {
-            throw new Error('Paciente não encontrado');
+            alert('❌ Paciente não encontrado');
+            return;
         }
+        
+        pacienteAtual = paciente;
         
         // Preencher formulário
         document.getElementById('pacNome').value = paciente.nome || '';
         document.getElementById('pacCpf').value = paciente.cpf || '';
-        document.getElementById('pacNascimento').value = paciente.data_nascimento || '';
         document.getElementById('pacTelefone').value = paciente.telefone || '';
         document.getElementById('pacEmail').value = paciente.email || '';
-        document.getElementById('pacCep').value = paciente.cep || '';
+        document.getElementById('pacNascimento').value = paciente.data_nascimento || '';
         document.getElementById('pacEndereco').value = paciente.endereco || '';
         document.getElementById('pacCidade').value = paciente.cidade || '';
-        document.getElementById('consentimentoLGPD').checked = true;
+        if (paciente.cep) document.getElementById('pacCep').value = paciente.cep || '';
         
-        // Abrir modal
-        abrirModalPaciente(pacienteId);
+        // Marcar checkbox LGPD como checked
+        const checkboxLGPD = document.getElementById('consentimentoLGPD');
+        if (checkboxLGPD) {
+            checkboxLGPD.checked = true;
+        }
+        
+        // Alterar título do modal
+        const modalTitulo = document.getElementById('modalTitulo');
+        if (modalTitulo) {
+            modalTitulo.innerHTML = '<i class="fas fa-edit"></i> Editar Paciente';
+        }
+        
+        // Armazenar ID para atualização
+        document.getElementById('pacNome').dataset.pacienteId = paciente.id;
+        
+        // Abrir modal (usando classe active)
+        const modal = document.getElementById('modalPaciente');
+        if (modal) {
+            modal.classList.add('active');
+        }
+        
+        console.log('✅ Paciente carregado para edição:', paciente);
         
     } catch (error) {
-        console.error('❌ Erro ao editar paciente:', error);
-        alert('❌ Erro ao carregar dados do paciente');
+        console.error('❌ Erro ao carregar paciente:', error);
+        alert('❌ Erro ao carregar dados do paciente. Tente novamente.');
     }
 }
 
-// ===================================================================
-// EXCLUIR PACIENTE
-// ===================================================================
-async function excluirPaciente(pacienteId) {
-    if (!confirm('⚠️ Tem certeza que deseja excluir este paciente?\n\nEsta ação não pode ser desfeita.')) {
+/**
+ * Excluir paciente
+ */
+async function excluirPaciente(id) {
+    if (!confirm('⚠️ Tem certeza que deseja excluir este paciente?\nEsta ação não pode ser desfeita.')) {
         return;
     }
     
     try {
-        console.log('🗑️ Excluindo paciente:', pacienteId);
+        console.log('🗑️ Excluindo paciente:', id);
         
-        const response = await fetch(`${window.SUPABASE_URL}/rest/v1/patients?id=eq.${pacienteId}`, {
-            method: 'DELETE',
-            headers: {
-                'apikey': window.SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
-            }
-        });
+        await supabase.deletePaciente(id);
         
-        if (!response.ok) {
-            throw new Error('Erro ao excluir paciente');
-        }
-        
-        console.log('✅ Paciente excluído com sucesso');
-        carregarPacientes();
+        console.log('✅ Paciente excluído');
         alert('✅ Paciente excluído com sucesso!');
+        
+        // Recarregar lista
+        await carregarPacientes();
         
     } catch (error) {
         console.error('❌ Erro ao excluir paciente:', error);
-        alert('❌ Erro ao excluir paciente');
+        alert(`Erro ao excluir paciente:\n${error.message}`);
     }
 }
 
-// ===================================================================
-// FECHAR MODAL
-// ===================================================================
+/**
+ * Fechar modal
+ */
 function fecharModal() {
     const modal = document.getElementById('modalPaciente');
     if (modal) {
         modal.classList.remove('active');
-        console.log('🔒 Modal fechado');
+    }
+    pacienteAtual = null;
+    
+    // Limpar formulário
+    const form = document.getElementById('formPaciente');
+    if (form) {
+        form.reset();
+    }
+    
+    console.log('🔒 Modal fechado');
+}
+
+/**
+ * Pesquisar pacientes
+ */
+function pesquisarPacientes() {
+    const termo = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    
+    if (!termo) {
+        renderizarListaPacientes(pacientesData);
+        return;
+    }
+    
+    const resultados = pacientesData.filter(p => 
+        (p.nome && p.nome.toLowerCase().includes(termo)) ||
+        (p.cpf && p.cpf.includes(termo)) ||
+        (p.telefone && p.telefone.includes(termo)) ||
+        (p.email && p.email.toLowerCase().includes(termo))
+    );
+    
+    renderizarListaPacientes(resultados);
+}
+
+/**
+ * Carregar pacientes do localStorage (fallback)
+ */
+function carregarPacientesLocal() {
+    console.log('⚠️ Modo fallback: carregando do localStorage');
+    
+    const localData = localStorage.getItem('clinicare_pacientes');
+    if (localData) {
+        try {
+            pacientesData = JSON.parse(localData);
+            renderizarListaPacientes(pacientesData);
+        } catch (e) {
+            console.error('Erro ao parsear localStorage:', e);
+            pacientesData = [];
+            renderizarListaPacientes([]);
+        }
+    } else {
+        pacientesData = [];
+        renderizarListaPacientes([]);
     }
 }
 
-// ===================================================================
-// PESQUISAR PACIENTES
-// ===================================================================
-function pesquisarPacientes(event) {
-    const termo = event.target.value.toLowerCase().trim();
-    const linhas = document.querySelectorAll('#tabelaPacientes tbody tr');
-    
-    let resultados = 0;
-    
-    linhas.forEach(linha => {
-        const texto = linha.textContent.toLowerCase();
-        const match = texto.includes(termo);
-        linha.style.display = match ? '' : 'none';
-        if (match) resultados++;
-    });
-    
-    console.log(`🔍 Busca: "${termo}" - ${resultados} resultado(s)`);
-}
-
-// ===================================================================
-// FORMATAR DATA
-// ===================================================================
+/**
+ * Formatar data
+ */
 function formatarData(dataISO) {
     if (!dataISO) return '-';
     
     try {
         const data = new Date(dataISO);
         return data.toLocaleDateString('pt-BR');
-    } catch (error) {
+    } catch (e) {
         return '-';
     }
 }
 
-// ===================================================================
-// EXPORTAR FUNÇÕES GLOBAIS
-// ===================================================================
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Botão de novo paciente
+    const btnNovo = document.getElementById('btnNovoPaciente');
+    if (btnNovo) {
+        btnNovo.addEventListener('click', abrirModalPaciente);
+    }
+    
+    // Formulário
+    const form = document.getElementById('formPaciente');
+    if (form) {
+        form.addEventListener('submit', salvarPaciente);
+    }
+    
+    // Campo de pesquisa
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', pesquisarPacientes);
+    }
+    
+    // Carregar pacientes
+    carregarPacientes();
+});
+
+// Exportar funções globais
 window.abrirModalPaciente = abrirModalPaciente;
 window.salvarPaciente = salvarPaciente;
 window.editarPaciente = editarPaciente;
 window.excluirPaciente = excluirPaciente;
 window.fecharModal = fecharModal;
 window.pesquisarPacientes = pesquisarPacientes;
-window.carregarPacientes = carregarPacientes;
 
-console.log('✅ Módulo pacientes-supabase.js inicializado com sucesso!');
-console.log('✅ Funções exportadas: abrirModalPaciente, salvarPaciente, editarPaciente, excluirPaciente, fecharModal');
+console.log('✅ Módulo de Pacientes com Supabase inicializado');
