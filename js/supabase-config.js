@@ -1,7 +1,7 @@
 /**
  * CLINICARE - Configuração Supabase Direto
  * Conexão direta com banco Supabase (sem backend intermediário)
- * Data: 06/03/2026
+ * Data: 06/03/2026 - VERSÃO DEBUG EDIÇÃO
  */
 
 // Configuração do Supabase
@@ -69,7 +69,18 @@ class SupabaseClient {
     }
 
     async getPacienteById(id) {
-        const result = await this.request(`/patients?id=eq.${id}`);
+        console.log('🔍 getPacienteById chamado com ID:', id);
+        const url = `/patients?id=eq.${id}`;
+        console.log('🔍 URL completa:', `${this.baseUrl}${url}`);
+        
+        const result = await this.request(url);
+        
+        console.log('📦 Resultado da query:', result);
+        console.log('📊 Tipo do resultado:', typeof result);
+        console.log('📊 É array?', Array.isArray(result));
+        console.log('📊 Tamanho do array:', result?.length);
+        console.log('📊 Primeiro elemento:', result?.[0]);
+        
         return result[0] || null;
     }
 
